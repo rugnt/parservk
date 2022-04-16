@@ -1,7 +1,17 @@
 from time import sleep
 from handlers import *
+from functools import partial
 
 import requests
+
+"""
+
+    Класс для парсинга и работы с постами вк
+    API не позволяет делать это быстро, поэтому
+    иногда он выводит ошибки, которые обрабатывает
+    try except KeyError
+
+"""
 
 class Option:
     """
@@ -108,13 +118,13 @@ class Group:
     handler = None
 
     def __init__(self,domain,count):
-           """
-           Констуктор, который также парсит данные
-           domain - название группы в url
-           count - сколько нужно спарсить постов.
-           Если count не кратно 100, то будет спарсено
-           в большую сторону числа, которое кратно 100
-           """
+        """
+        Констуктор, который также парсит данные
+        domain - название группы в url
+        count - сколько нужно спарсить постов.
+        Если count не кратно 100, то будет спарсено
+        в большую сторону числа, которое кратно 100
+        """
         parsing = partial(
             Request("wall.get"),
             domain=domain,
@@ -204,25 +214,17 @@ class Groups(Group):
 
 
 if __name__ == "__main__":
-    group1 = Group("netflix_show",1000)
-    group2 = Group("typical_krd",1000)
+    group1 = Group("netflix_show",300)
+    group2 = Group("typical_krd",300)
     group1.handler = Sorted(False)
     group2.handler = Sorted(True)
     group3 = group1 + group2
-    group3.handler = group3.handler + FilterSentence(["Коронавирус"],[])
+    group3.handler = group3.handler +FilterType("photo")
     
     group3.start_handler()
-
-    for i in group3:
-        print(i.text)
-    #a.sortedset(True)
-    #a.filterset([],[])
-    #a.filter()
-    #a.sorted()
-    #pg = PostGroup(-209190157)
-    #pg.add_group(a,3)
-    #for i in a:
-    #    print(i.text)
+    print(len(group3))
+#   for i in group3:
+#        print(i.text)
 
 
 

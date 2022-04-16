@@ -1,5 +1,14 @@
 from abc import abstractmethod, ABC
 
+"""
+    Здесь хранятся различные обработчики(фильтры,сортировки,
+    классы для сбора статистики). Для того, чтобы их использо-
+    вать в объектах класса group(groups) используйте
+    group.handler = Обработчик(аргументы) и запустить:
+    group.start_handler()
+
+"""
+
 class Abstract(ABC):
     """
     Абстрактный класс(интерфейс)
@@ -7,8 +16,7 @@ class Abstract(ABC):
     обработчиков постов.
     Такие обработчики, как сортировки
     и фильтры не требуются метод
-    get, но он нужен для 
-    сбора статистики
+    get
     """
 
     @abstractmethod
@@ -87,8 +95,11 @@ class FilterSentence(Abstract):
     """
 
     def __init__(self,indict=[],notindict=[]):
-        self.dictionary1 = indict
-        self.dictionary2 = notindict
+        if type(indict) == list and type(notindict) == list:
+            self.dictionary1 = indict
+            self.dictionary2 = notindict
+        else:
+            raise TypeError("FilterSentence: в конструкторе должны быть заданы списки")
 
     def __call__(self,posts):
         for i in range(len(posts)-1,-1,-1):
@@ -100,6 +111,38 @@ class FilterSentence(Abstract):
             for sentence in self.dictionary2:
                 if sentence.lower() in posts[i].text.lower():
                     posts.pop(i)
+
+    def get(self) -> dict:
+        return {}
+
+
+class FilterType(Abstract):
+    """
+    Фильтр, который удаляет все
+    посты кроме тех, у которых
+    присутствует необходимый тип в
+    записи. Например записи, у которых
+    есть "photo" не удаляются
+    """
+
+    def __init__(self,tp):
+        self.type = tp
+
+    def __call__(self,posts):
+        for i in range(len(posts)-1,-1,-1):
+            delete = True
+            try:
+                attachments = posts[i]["attachments"]
+                for attachment in attachments:
+                    if attachment["type"] in self.type:
+                        delete = False
+                        break
+            except KeyError:
+                delete = False
+            finally:
+                if delete:
+                    posts.pop(i)
+
 
     def get(self) -> dict:
         return {}
