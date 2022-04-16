@@ -1,15 +1,21 @@
-from abc import ABC, abstractmethod
-from functools import partial
 from time import sleep
 from handlers import *
 
 import requests
 
 class Option:
+    """
+    Начальные опции парсера
+    """
+
     version = "5.131"
     token = open("token.txt","tr").read()
 
 class Request(Option):
+    """
+    Класс для работы с 
+    api вконтаке
+    """
     address = "https://api.vk.com/method/"
 
     def __init__(self,method):
@@ -23,6 +29,10 @@ class Request(Option):
             }).json()
 
 class Post:
+    """
+    Класс для отображения
+    определенного поста
+    """
 
     def __init__(self,data):
         self.data = data
@@ -46,6 +56,13 @@ class Post:
         self.data[key] = value
 
 class Posts:
+    """
+    Класс для отображения
+    и минимальной обработки
+    постов вконтакте. Большинство
+    методов совпадают с методами
+    list
+    """
 
     def __init__(self,json):
         self.data = []
@@ -82,11 +99,22 @@ class Posts:
 class Group:
 
     """
-    Класс, отображающий группу вк
+    Класс, реализующий парсинг
+    групп. для обращения к опреде-
+    ленному посту используется
+    конструкция group[i]. Будет
+    выведен объект класса Post
     """
     handler = None
 
     def __init__(self,domain,count):
+           """
+           Констуктор, который также парсит данные
+           domain - название группы в url
+           count - сколько нужно спарсить постов.
+           Если count не кратно 100, то будет спарсено
+           в большую сторону числа, которое кратно 100
+           """
         parsing = partial(
             Request("wall.get"),
             domain=domain,
@@ -109,6 +137,9 @@ class Group:
     def __getitem__(self,pos):
         return self.posts[pos]
 
+    def __len__(self):
+        return len(self.posts)
+
     def start_handler(self):
         self.handler(self.posts)
 
@@ -119,6 +150,11 @@ class Group:
         return groups
 
 class PostGroup:
+    """
+    Класс для выгрузки постов
+    в определенную группу, к
+    которому есть доступ у токена
+    """
     posting = Request("wall.post")
 
     def __init__(self,domain):
@@ -144,7 +180,7 @@ class PostGroup:
             owner_id=self.domain
         )
 
-    def add_group(self,group,count=31243243):
+    def add_group(self,group,count=50):
         for post in group:
             print(post)
             if count <= 0:
@@ -154,20 +190,31 @@ class PostGroup:
             sleep(0.5)
 
 class Groups(Group):
+    """
+    Абсолютно такой же
+    класс как и Group за
+    исключением того, что
+    этот класс возникает при
+    суммировании двух объектов
+    класса Group
+    """
     
     def __init__(self,data):
         self.posts = data
 
 
 if __name__ == "__main__":
-    a = Group("netflix_show",100)
-    b = Group("donetsk",100)
-    a.handler = Sorted(False)
-    b.handler = Sorted(True)
-    c = a + b
-    c.start_handler()
-    for i in c:
-        print(i)
+    group1 = Group("netflix_show",1000)
+    group2 = Group("typical_krd",1000)
+    group1.handler = Sorted(False)
+    group2.handler = Sorted(True)
+    group3 = group1 + group2
+    group3.handler = group3.handler + FilterSentence(["Коронавирус"],[])
+    
+    group3.start_handler()
+
+    for i in group3:
+        print(i.text)
     #a.sortedset(True)
     #a.filterset([],[])
     #a.filter()

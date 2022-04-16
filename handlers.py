@@ -1,9 +1,15 @@
 from abc import abstractmethod, ABC
-from copy import copy
-
-
 
 class Abstract(ABC):
+    """
+    Абстрактный класс(интерфейс)
+    задающий методы для будущих
+    обработчиков постов.
+    Такие обработчики, как сортировки
+    и фильтры не требуются метод
+    get, но он нужен для 
+    сбора статистики
+    """
 
     @abstractmethod
     def __init__(self,*args,**kwargs):
@@ -23,12 +29,18 @@ class Abstract(ABC):
     def __add__(self,obj):
         return Handlers(self,obj)
 
-    def __raddr__(self,obj):
+    def __radd__(self,obj):
         return Handlers(self,obj)
 
 
 class Handlers(Abstract):
+    """
+    Класс, возникающий при
+    суммировании двух обработчиков
+    """
+
     handlers = []
+
     def __init__(self,*args):
         for arg in args:
             if arg is None:
@@ -51,6 +63,11 @@ class Handlers(Abstract):
         return result
 
 class Sorted(Abstract):
+    """
+    Сортировка. reverse=True,
+    если нужно перевернуть сортировать
+    в обратном порядке
+    """
 
     def __init__(self,reverse=False):
         self.reverse = reverse
@@ -62,10 +79,16 @@ class Sorted(Abstract):
         return {}
 
 class FilterSentence(Abstract):
+    """
+    Фильтр постов. Если в
+    тексте поста есть notindict,
+    то пост удаляется или если он не имеется
+    в indict
+    """
 
-    def __init__(self,truedict=[],falsedict=[]):
-        self.dictionary1 = truedict
-        self.dictionary2 = falsedict
+    def __init__(self,indict=[],notindict=[]):
+        self.dictionary1 = indict
+        self.dictionary2 = notindict
 
     def __call__(self,posts):
         for i in range(len(posts)-1,-1,-1):
