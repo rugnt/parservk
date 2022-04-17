@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABC
+from re import search
 
 """
     Здесь хранятся различные обработчики(фильтры,сортировки,
@@ -76,12 +77,13 @@ class Sorted(Abstract):
     если нужно перевернуть сортировать
     в обратном порядке
     """
+    _function = lambda self,x : x.date
 
     def __init__(self,reverse=False):
         self.reverse = reverse
 
     def __call__(self,posts):
-        posts.sort(key = lambda x: x.date,reverse=self.reverse)
+        posts.sort(key=self._function, reverse=self.reverse)
 
     def get(self) -> dict:
         return {}
@@ -147,4 +149,37 @@ class FilterType(Abstract):
     def get(self) -> dict:
         return {}
 
+class RegularFilter(FilterSentence):
+    """
+    Фильтр для работы с регулярными
+    выражениями
+    """
 
+    def __call__(self,posts):
+        for i in range(len(posts)-1,-1,-1):
+            for sentence in self.dictionary1:
+                if not re.search(sentence.lower(), posts[i].text.lower()):
+                    posts.pop(i)
+                    continue
+
+            for sentence in self.dictionary2:
+                if re.search(sentence.lower(), posts[i].text.lower()):
+                    posts.pop(i)
+
+
+class LikeSort(Sorted):
+
+    """
+    Сортировка по лайкам
+    записи
+    """
+    _function = lambda self,x : x.likes["count"]
+
+class Ratio(Sorted):
+
+    """
+    Отношение лайков
+    и публикаций
+    """
+    
+    _function = lambda self,x : (int(x.reposts["count"])/int(x.likes["count"]))

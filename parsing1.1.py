@@ -57,7 +57,7 @@ class Post:
         return f"<class Post, date={self.data['date']}>"
 
     def __str__(self):
-        return self.__repr__()
+        return str(self.data)
 
     def __getitem__(self,key):
         return self.data[key]
@@ -183,7 +183,6 @@ class PostGroup:
         return ",".join(lst)
 
     def add_post(self,post):
-        print(post.attachments)
         self.posting(
             attachments=self.get_attachments(post.attachments),
             message=post.text,
@@ -214,22 +213,20 @@ class Groups(Group):
 
 
 if __name__ == "__main__":
-    group1 = Group("netflix_show",300)
-    group2 = Group("typical_krd",300)
-    group1.handler = Sorted(False)
-    group2.handler = Sorted(True)
-    group3 = group1 + group2
-    group3.handler = group3.handler +FilterType("photo")
+    group1 = Group("ultdank",1000)
+    group1.handler = FilterType("photo")+Ratio(True)
     
-    group3.start_handler()
-    print(len(group3))
-#   for i in group3:
-#        print(i.text)
-
-
-
-
-
-
-
-
+    print(group1[1], end="\n\n")
+    print(group1[2], end="\n\n")
+    print(group1[3])
+    group1.start_handler()
+    mygroup = PostGroup(-209190157)
+#   mygroup.add_group(group1,3)
+    
+    for i in range(len(group1)):
+        if i < 3:
+            continue
+        elif i < 11:
+            mygroup.add_post(group1[i])
+        else:
+            break
