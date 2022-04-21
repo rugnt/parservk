@@ -1,5 +1,4 @@
 from time import sleep
-from handlers import *
 from functools import partial
 
 import requests
@@ -19,7 +18,7 @@ class Option:
     """
 
     version = "5.131"
-    token = open("token.txt","tr").read()
+    token = open("token.txt","tr").read().replace(" ","").replace("\n","")
 
 class Request(Option):
     """
@@ -32,8 +31,8 @@ class Request(Option):
         self.address = self.address + method
 
     def __call__(self,**kwargs) -> dict:
-        return requests.get(self.address,
-                params=kwargs | {\
+        return requests.post(self.address,
+                kwargs | {\
                 'access_token': self.token,
                 'v':self.version
             }).json()
@@ -213,20 +212,4 @@ class Groups(Group):
 
 
 if __name__ == "__main__":
-    group1 = Group("ultdank",1000)
-    group1.handler = FilterType("photo")+Ratio(True)
-    
-    print(group1[1], end="\n\n")
-    print(group1[2], end="\n\n")
-    print(group1[3])
-    group1.start_handler()
-    mygroup = PostGroup(-209190157)
-#   mygroup.add_group(group1,3)
-    
-    for i in range(len(group1)):
-        if i < 3:
-            continue
-        elif i < 11:
-            mygroup.add_post(group1[i])
-        else:
-            break
+    pass
