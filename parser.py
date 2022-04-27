@@ -1,6 +1,5 @@
 from time import sleep
 from functools import partial
-
 import requests
 
 """
@@ -72,13 +71,18 @@ class Posts:
     методов совпадают с методами
     list
     """
+    
+    count = 0
 
-    def __init__(self,json):
+    def __init__(self,json=None):
         self.data = []
-        self.count = json["response"]["count"]
+        if json is not None:
+            self.count = json["response"]["count"]
 
-        for data in json["response"]["items"]:
-            self.data.append(Post(data))
+            for data in json["response"]["items"]:
+                self.data.append(Post(data))
+
+
 
     def pop(self,i):
         return self.data.pop(i)
@@ -115,33 +119,39 @@ class Group:
     выведен объект класса Post
     """
     handler = None
+    posts = Posts()
+    __count = 0
 
-    def __init__(self,domain,count):
+    def __init__(self,domain):
+        self.domain = domain
+
+    def parser(self,count):
         """
-        Констуктор, который также парсит данные
-        domain - название группы в url
+        Метод,который парсит данные
         count - сколько нужно спарсить постов.
         Если count не кратно 100, то будет спарсено
         в большую сторону числа, которое кратно 100
         """
         parsing = partial(
             Request("wall.get"),
-            domain=domain,
+            domain=self.domain,
             count=100,
         )
-        posts = Posts(parsing(offset=0))
-        offset = 100
-        while count > offset:
+
+        amount = self.__count
+        offset = amount
+
+        while amount+count > offset:
             try:
-                print(offset)
-                posts.extend(Posts(parsing(offset=offset)))
+                self.posts.extend(Posts(parsing(offset=offset)))
                 offset += 100
                 sleep(0.5)
             except KeyError:
                 sleep(1)
+        
 
-        self.posts = posts
-        self.count = posts.count
+        self.count = self.posts.count
+        self.__count = offset
 
     def __getitem__(self,pos):
         return self.posts[pos]
